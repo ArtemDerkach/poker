@@ -5,7 +5,6 @@ const assert = chai.assert;
 
 const Game = require('../../mainApp/gameProcesses.js').Game;
 
-
 const Round = require('../../mainApp/gameProcesses.js').Round;
 const Dealer = require('../../mainApp/dealerClass.js').Dealer;
 const Bank = require('../../mainApp/bankClass.js').Bank;
@@ -152,6 +151,13 @@ describe('Game class', () => {
 
 describe('Round class', () => {
 
+  describe('properties', () => {
+    describe('players properties', () => {
+      it('should be an object', () => {
+        assert.
+      })
+    })
+  });
 
 
 });
