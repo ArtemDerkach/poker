@@ -4,12 +4,11 @@ const chai = require('chai');
 const assert = chai.assert;
 
 const Game = require('../../mainApp/gameProcesses.js').Game;
-
 const Round = require('../../mainApp/gameProcesses.js').Round;
 const Dealer = require('../../mainApp/dealerClass.js').Dealer;
 const Bank = require('../../mainApp/bankClass.js').Bank;
 const Table = require('../../mainApp/tableClass.js').Table;
-// const Player = require('../../mainApp/playerClass.js').Player;
+const Player = require('../../mainApp/playerClass.js').Player;
 // const table = new Table();
 
 describe('Game class', () => {
@@ -33,9 +32,9 @@ describe('Game class', () => {
         assert.strictEqual(game.bank.constructor, Bank);
       });
     });
-    describe('rounk property', () => {
-      it('should have Round constructor', () => {
-        assert.strictEqual(game.round.constructor, Round);
+    describe('round property', () => {
+      it('should should be undefined at the start', () => {
+        assert.isUndefined(game.round);
       });
     });
     describe('players property', () => {
@@ -145,19 +144,110 @@ describe('Game class', () => {
         assert.strictEqual(game.players[game.playersInGame[game.playersInGame.length - 1]], firstPlayer);
       });
     });
+    describe('startGame method', () => {
+    });
+    describe('endGame method', () => {
+    });
   });
 
 });
 
 describe('Round class', () => {
 
+  const players = {
+    Vasia: new Player(100),
+    Ksusha: new Player(100),
+    Stepa: new Player(100),
+    Masha: new Player(101)
+  };
+  const round = new Round(players, new Dealer(), new Bank());
+
   describe('properties', () => {
-    describe('players properties', () => {
+    describe('players property', () => {
       it('should be an object', () => {
-        assert.
-      })
-    })
+        assert.isObject(round.players);
+      });
+      it('should have length 2 or greater', () => {
+        assert.isAtLeast(Object.keys(round.players).length, 2);
+      });
+      it('each player should have Player constructor', () => {
+        for (const playerName in round.players) {
+          if (round.hasOwnProperty(players[playerName])) {
+            assert.strictEqual(round.players[playerName].constructor, Player);
+          }
+        }
+      });
+    });
+    describe('playersInRound property', () => {
+      it('should be an array', () => {
+        assert.isArray(round.playersInRound);
+      });
+      it('should have length same as num of players in players property', () => {
+        assert.lengthOf(round.playersInRound, Object.keys(round.players).length);
+      });
+      it('should be same names as in players property', () => {
+        assert.sameMembers(round.playersInRound, Object.keys(round.players));
+      });
+    });
+    describe('dealer property', () => {
+      it('should have Dealer constructor', () => {
+        assert.strictEqual(round.dealer.constructor, Dealer);
+      });
+    });
+    describe('bank property', () => {
+      it('should have Bank constructor', () => {
+        assert.strictEqual(round.bank.constructor, Bank);
+      });
+    });
+    describe('game stages property', () => {
+      it('should be array of strings', () => {
+        assert.deepEqual(round.gameStage, ['preflop', 'flop', 'tern', 'reaver']);
+      });
+    });
+    describe('playersAction property', () => {
+      it('should be undefined at start', () => {
+        assert.isUndefined(round.playersAction);
+      });
+    });
   });
 
+  describe('round methods', () => {
+    describe('iteratePlayersInRound method', () => {
+      const playersBeforeIteration = round.playersInRound;
+      round.iteratePlayersInRound();
+      it('should change an array so that first player in array should be the last', () => {
+        assert.strictEqual(playersBeforeIteration[0], round.playersInRound[round.playersInRound.length - 1]);
+      });
+      it('playersInRound property should stay the same after calling this method', () => {
+        assert.sameMembers(playersBeforeIteration, round.playersInRound);
+      });
+    });
+    describe('removePlayerFromRound method', () => {
+      it('should return true if player was founded', () => {
+        assert.isOk(round.removePlayerFromRound('Vasia'));
+      });
+      it('should return false if no player found', () => {
+        assert.isNotOk(round.removePlayerFromRound('NoNaMe'));
+      });
+      it('should decrisse playersInRound property by 1', () => {
+        const beforeRemove = round.playersInRound;
+        round.removePlayerFromRound(round.playersInRound[0]);
+        assert.strictEqual(beforeRemove.length, round.playersInRound.length + 1);
+      });
+    });
+    describe('isRoundEnded method', () => {
+      it('should return false if playersInRound.length > 1', () => {
+        assert.isNotOk(round.isRoundEnded());
+      });
+      it('should return true if playersInRound.length <= 1', () => {
+        round.playersInRound.length = 1;
+        assert.isOk(round.isRoundEnded());
+      });
+    });
+    describe('start method', () => {
+    });
+    describe('stages method', () => {
+    });
+  });
 
 });
