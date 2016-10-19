@@ -1,11 +1,17 @@
 'use strict';
 
+const symbols = {spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦'};
+const rankToCost = {J: 11, Q: 12, K: 13, A: 14};
+
 class Card {
 
-  constructor(rank, suit, cost) {
+  constructor(rank, suit) {
     this.rank = rank;
-    this.suit = suit;
-    this.cost = cost;
+    this.suit = {
+      name: suit,
+      symbol: symbols[suit]
+    };
+    this.cost = Number(rank) || rankToCost[rank];
   }
 
   compare(card) {
@@ -17,7 +23,7 @@ class Card {
     return 0;
   }
 
-  get value() {
+  value() {
     return this.rank + this.suit.symbol;
   }
 
