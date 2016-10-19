@@ -48,8 +48,8 @@ class Round {
     }
   }
 
-  iteratePlayersInRound(playerNum) {
-    this.playersInRound = this.playersInRound.slice(playerNum, this.playersInRound.length).concat(this.playersInRound.slice(0, playerNum));
+  iteratePlayersInRound() {
+    this.playersInRound = this.playersInRound.slice(1, this.playersInRound.length).concat(this.playersInRound.slice(0, 1));
   }
 
   removePlayerFromRound(playerToRemove) {
@@ -57,8 +57,17 @@ class Round {
       if (this.playersInRound[i] === playerToRemove) {
         this.players[this.playersInRound[i]].betInRound = 0;
         this.playersInRound = this.playersInRound.slice(0, i).concat(this.playersInRound.slice(i + 1, this.playersInRound.length));
+        return true;
       }
     }
+    return false;
+  }
+
+  isRoundEnded() {
+    if (this.playersInRound.length <= 1) {
+      return true;
+    }
+    return false;
   }
 
 }
@@ -70,7 +79,7 @@ class Game {
     this.table = new Table();
     this.bank = new Bank();
     this.dealer = new Dealer();
-    this.round = new Round();
+    this.round;
     this.players = {};
     this.playersInGame = [];
   }
@@ -119,7 +128,7 @@ class Game {
   startGame() {
     do {
       this.takeBlindsFromPlayers();
-      this.round = new Round(this.players, this.dealer);
+      this.round = new Round(this.players, this.dealer, this.bank);
       this.round.start();
 
       this.playersInGame = Object.keys(this.players);
