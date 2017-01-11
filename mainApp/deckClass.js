@@ -41,7 +41,6 @@ class Deck {
     return cardToDeal;
   }
 
-  // deal n cards
   dealNCards(n) {
     const result = [];
     for (let i = n; i > 0; i -= 1) {
