@@ -37,7 +37,7 @@ describe('Card Class', () => {
   });
 
   describe('methods', () => {
-    describe('compare method should compare 2 cards be cost', () => {
+    describe('compare method should compare 2 cards by cost', () => {
       it('return 1 if first is bigger ', () => {
         assert.strictEqual(aceOfSpades.compare(kingOfHearts), 1);
       });
