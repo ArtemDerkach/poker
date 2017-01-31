@@ -8,7 +8,7 @@
 //    ......
 //    ......
 //  ]
-//  
+//
 //  return combination that has a player
 
 function handCombination(tableSituation) {
@@ -47,7 +47,7 @@ function highToLow(tableSituation) {
       if (hand[i].cost < hand[j].cost) {
         temp = hand[i];
         hand[i] = hand[j];
-        hand[j] = temp; 
+        hand[j] = temp;
       }
     }
   }
@@ -70,7 +70,7 @@ function distance(arr, range) {
 // l - length of conmbination that we search
 // arr - given cards
 // distStr - string of matched distancess
-// pattern - exact pattern that we want to find if distStr 
+// pattern - exact pattern that we want to find if distStr
 function combo(hand, distanceStr, pattern, l) {
   // position of matched pattern in string that show distances
   let pos = distanceStr.search(pattern);
@@ -223,7 +223,7 @@ function pair(tableSituation) {
     hand: pair.hand.concat(pair.rest.slice(0, 3)),
     combo: 'pair',
     cost: 2
-  };  
+  };
 }
 
 function highCard(tableSituation) {

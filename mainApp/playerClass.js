@@ -2,15 +2,19 @@
 
 class Player {
 
-  constructor(playerMoney) {
-    this.hand = [];
+  constructor(name, type, playerMoney) {
+    this.name = name;
+    this.type = type;
     this.money = playerMoney || 100;
+    this.hand = [];
+    this.bet = 0;
     this.betInRound = 0;
     this.smallBlind = false;
     this.bigBlind = false;
+    this.action;
   }
 
-  action(typeOfAction) {
+  makeAction() {
     let action = new Action();
     return action[typeOfAction.name](typeOfAction.param);
   }

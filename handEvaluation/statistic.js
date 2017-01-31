@@ -14,7 +14,7 @@ for (let i = 0; i <= a.length - 1; i += 1) {
   deckClass.shuffle();
   deckClass.shuffle();
   deckClass.shuffle();
-  let myHand = []; 
+  let myHand = [];
   myHand.push(deckClass.dealCard({rank: a[i], suit: 'spades'}));
   myHand.push(deckClass.dealCard({rank: a[i], suit: 'diamonds'}));
   let table = [];
@@ -22,4 +22,3 @@ for (let i = 0; i <= a.length - 1; i += 1) {
   console.log(myHand);
   console.log(winRateFunc(myHand, table, 1, deckClass));
 }
-

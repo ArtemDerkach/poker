@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="chatClient.js"></script>
+    <script src="actionsClient.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+
+        // const chat = require('chat').chatClient;
+        const socket = io.connect('localhost:8080');
+
+        chatClient(document, io, socket);
+        actionsClient(document, socket);
+
+      });
+    </script>
+
+    <title>Poker</title>
+  </head>
+  <body>
+
+    <h1 id="logo">
+      Poker
+    </h1>
+
+    <div class="newGame">
+      <button >New Game</button>
+    </div>
+
+
+
+    <div class="chat">
+      <input class="chat-name" placeholder="enter your name">
+      <div class="chat-messages"></div>
+      <textarea placeholder="enter your message"></textarea>
+      <div class="chat-status">Status: <span>good</span></div>
+    </div>
+
+    <div class="gameGrid">
+
+      <div class="cards">
+
+        <div class="opponentHand">
+          <div class="card"></div>
+          <div class="card"></div>
+          <p>opponent current money: <span>0</span></p>
+        </div>
+
+        <div class="table">
+          <div class="card"></div>
+          <div class="card"></div>
+          <div class="card"></div>
+          <div class="card"></div>
+          <div class="card"></div>
+          <p>pot: <span>0</span></p>
+        </div>
+
+        <div class="myHand" id="myH">
+          <div class="card"></div>
+          <div class="card"></div>
+          <p>current money: <span>0</span></p>
+        </div>
+
+        <div class="actions game">
+          <button type="button" data-action="card" class="action-button">Give Card</button>
+          <button  type="button" data-action="fold" class="action-button">Fold</button>
+          <button type="button" data-action="call" class="action-button">Call:<span> 0</span></button>
+          <button type="button" data-action="raise" class="action-button">Raise</button>
+          <textarea placeholder="enter sum to raise"></textarea>
+          <button type="button" data-action="check" class="action-button">Check</button>
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+
+
+
+  </body>
+
+</html>

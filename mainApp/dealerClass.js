@@ -4,10 +4,9 @@ const Deck = require('./deckClass.js').Deck;
 
 class Dealer {
 
-  constructor(deck) {
-    this.deck = deck
-      ? deck.shuffle()
-      : new Deck().shuffle();
+  constructor() {
+    this.pot = 0;
+    this.deck = new Deck().shuffle();
   }
 
   dealCardsToPlayers(players) {
@@ -19,13 +18,17 @@ class Dealer {
     }
   }
 
-  openCard(cardsOnTable) {
+  dealCardOnTable(cardsOnTable) {
     cardsOnTable.push(this.deck.deal());
   }
 
-  openCards(cardsOnTable, n) {
-    for (let i = 0; i < n; i += 1) {
-      cardsOnTable.push(this.deck.deal());
+  playerAction(action) {
+    switch (action) {
+      case fold:
+
+        break;
+      default:
+
     }
   }
 

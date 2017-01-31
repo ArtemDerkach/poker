@@ -2,86 +2,23 @@
 
 const Player = require('./playerClass.js').Player;
 const Dealer = require('./dealerClass.js').Dealer;
-const Bank = require('./bankClass.js').Bank;
-const Table = require('./tableClass.js').Table;
-
-class Round {
-
-  constructor(players, dealer, bank) {
-    this.players = players || {};
-    this.playersInRound = players ? Object.keys(players) : [];
-    this.dealer = dealer;
-    this.bank = bank;
-    this.gameStage = ['preflop', 'flop', 'tern', 'reaver'];
-    this.playersAction;
-  }
-
-  stages() {
-    this.itaratePlayersInRound();
-    this.itaratePlayersInRound();
-    this.dealer.dealCardsToPlayers(this.players);
-    for (let i = 0; i < this.gameStage.length; i += 1) {
-      this.start();
-    }
-  }
-
-  start() {
-    for (let j = 0; j < this.playersInRound.length; j += 1) {
-      this.playersAction = this.players[this.playersInRound[j]].action();
-      switch (this.playersAction.type) {
-      case 'fold':
-        this.this.removePlayerFromRound(this.playersInRound[j]);
-        j -= 1;
-        break;
-      case 'call':
-        this.players[this.playersInRound[j]].onCall(this.bank);
-        break;
-      case 'check':
-        break;
-      case 'raise':
-        this.players[this.playersInRound[j]].raise(this.bank, this.playersAction.sumToRaise);
-        this.iteratePlayersInRound(j);
-        j = 1;
-        break;
-      default:
-      }
-    }
-  }
-
-  iteratePlayersInRound() {
-    this.playersInRound = this.playersInRound.slice(1, this.playersInRound.length).concat(this.playersInRound.slice(0, 1));
-  }
-
-  removePlayerFromRound(playerToRemove) {
-    for (let i = 0; i < this.playersInRound.length; i += 1) {
-      if (this.playersInRound[i] === playerToRemove) {
-        this.players[this.playersInRound[i]].betInRound = 0;
-        this.playersInRound = this.playersInRound.slice(0, i).concat(this.playersInRound.slice(i + 1, this.playersInRound.length));
-        return true;
-      }
-    }
-    return false;
-  }
-
-  isRoundEnded() {
-    if (this.playersInRound.length <= 1) {
-      return true;
-    }
-    return false;
-  }
-
-}
-
 
 class Game {
 
-  constructor() {
-    this.table = new Table();
-    this.bank = new Bank();
-    this.dealer = new Dealer();
-    this.round;
+  constructor(socket) {
+    this.gameStarted = false;
+    this.socket = socket;
     this.players = {};
-    this.playersInGame = [];
+    this.cardsOnTable = [];
+    this.dealer = new Dealer();
+    this.isRoundEnd = true;
+    this.isCircleEnd = true;
+    this.gameStages = ['preflop', 'flop', 'tern', 'reaver'];
+    this.playerInGame = [];
+    this.playersInRound = [];
+    this.gameStage = '';
+    this.circleQueue = [];
+    this.playerToStopOn;
   }
 
   addPlayer(playerName, playerMoney) {
@@ -99,14 +36,19 @@ class Game {
   }
 
   removePlayer(playerToRemove) {
-    for (let i = 0; i < this.playersInGame.length; i += 1) {
-      if (this.playersInGame[i] === playerToRemove) {
-        this.playersInGame = this.playersInGame.slice(0, i).concat(this.playersInGame.slice(i + 1, this.playersInGame.length));
-        delete this.players[playerToRemove];
-        return true;
+    this.removePlayerFromArray(playerToRemove, this.playersInGame);
+    this.removePlayerFromArray(playerToRemove, this.playersInRound);
+    this.removePlayerFromArray(playerToRemove, this.circleQueue);
+    delete this.players[playerToRemove];
+  }
+
+  removePlayerFromArray(name, arrayToFindIn) {
+    for (let i = 0; i < arrayToFindIn.length; i += 1) {
+      if (arrayToFindIn[i] === name) {
+        arrayToFindIn.splice(i, 1);
+        break;
       }
     }
-    return false;
   }
 
   takeBlindsFromPlayers() {
@@ -121,26 +63,116 @@ class Game {
     this.players[this.playersInGame[0]].smallBlind = true;
     this.players[this.playersInGame[1]].money -= 2;
     this.players[this.playersInGame[1]].bigBlind = true;
-    this.bank.pot += 3;
+    this.dealer.pot += 3;
     return true;
   }
 
-  startGame() {
-    do {
-      this.takeBlindsFromPlayers();
-      this.round = new Round(this.players, this.dealer, this.bank);
-      this.round.start();
+  go() {
+    if (this.gameStarted) {
+      this.round();
+    }
+  }
 
-      this.playersInGame = Object.keys(this.players);
-    } while (Object.keys(this.players).length > 1);
+  round() {
+    if (this.gamestage === 'ended') {
+      this.gameStage = '';
+      this.playersInRound = [];
+      for (let i = 0; i < this.playersInGame.length; i += 1) {
+        this.playersInRound.push(this.playersInGame[i]);
+      }
+    } else {
+      this.stage();
+    }
+  }
+
+  stage() {
+    if (this.isCircleEnd === 'false') {
+      this.circle();
+    } else {
+      switch (this.gameStage) {
+      case '':
+        this.gameStage = 'preflop';
+        this.takeBlindsFromPlayers();
+        this.dealer.dealCardsToPlayers(this.players);
+        break;
+      case 'preflop':
+        this.gameStage = 'flop';
+        this.dealer.dealCardOnTable(this.cardsOnTable);
+        break;
+      case 'flop':
+        this.gameStage = 'tern';
+        this.dealer.dealCardOnTable(this.cardsOnTable);
+        break;
+      case 'tern':
+        this.gameStage = 'reaver';
+        this.dealer.dealCardOnTable(this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.cardsOnTable);
+        break;
+      case 'reaver':
+        this.gameStage = 'ended';
+        break;
+      default:
+        break;
+      }
+      this.circleQueue = [];
+      for (let i = 0; i < this.playersInRound.length; i += 1) {
+        this.circleQueue.push(this.playersInRound[i]);
+      }
+    }
+  }
+
+  circle() {
+    if (this.players[this.circleQueue[0]].type === 'human' && this.players[this.circleQueue[0]].action === '') {
+      this.socket.emit('message', {
+        player: this.players[this.circleQueue[0]].name,
+        status: 'need action'
+      });
+    } else {
+      this.playerAction(this.players[this.circleQueue[0]].action);
+    }
+  }
+
+  playerAction(action) {
+    switch (action.type) {
+    case 'fold':
+      this.removePlayerFromArray(this.circleQueue[0], this.playersInRound);
+      this.removePlayerFromArray(this.circleQueue[0], this.circleQueue);
+      break;
+    case 'check':
+      this.iteratePlayersInCircle();
+      break;
+    case 'call':
+      this.dealer.callBet(this.players[this.circleQueue[0]]);
+      this.iteratePlayersInCircle();
+      break;
+    case 'raise':
+      this.dealer.raiseBet(this.players);
+      this.playerToStopOn = this.circleQueue[0];
+      this.iteratePlayersInCircle();
+      break;
+    default:
+      break;
+    }
+  }
+
+  iteratePlayersInCircle() {
+    this.playersInCircle = this.playersInCircle.slice(1, this.playersInCircle.length).concat(this.playersInCircle.slice(0, 1));
+    if (this.playerToStopOn === '') {
+      this.playerToStopOn = this.circleQueue[this.circleQueue.length - 1];
+    } else if (this.playerToStopOn === this.players[this.circleQueue[0]]) {
+      this.isCircleEnd = true;
+    }
+  }
+
+  startGame() {
+    this.gameStarted = true;
   }
 
   endGame() {
-
+    this.gameStarted = false;
   }
 
 }
 
-
 module.exports.Game = Game;
-module.exports.Round = Round;

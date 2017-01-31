@@ -43,7 +43,7 @@ function costCompare(handBase, handTemp) {
             return result;
             break;
           case (temp === 0):
-            break;  
+            break;
         }
       }
       result.push(handTemp);

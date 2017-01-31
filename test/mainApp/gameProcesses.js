@@ -6,8 +6,6 @@ const assert = chai.assert;
 const Game = require('../../mainApp/gameProcesses.js').Game;
 const Round = require('../../mainApp/gameProcesses.js').Round;
 const Dealer = require('../../mainApp/dealerClass.js').Dealer;
-const Bank = require('../../mainApp/bankClass.js').Bank;
-const Table = require('../../mainApp/tableClass.js').Table;
 const Player = require('../../mainApp/playerClass.js').Player;
 // const table = new Table();
 
@@ -17,19 +15,10 @@ describe('Game class', () => {
 
     const game = new Game();
 
-    describe('table property', () => {
-      it('should have Table constructor', () => {
-        assert.strictEqual(game.table.constructor, Table);
-      });
-    });
+
     describe('dealer property', () => {
       it('should have Dealer constructor', () => {
         assert.strictEqual(game.dealer.constructor, Dealer);
-      });
-    });
-    describe('bank property', () => {
-      it('should have Bank constructor', () => {
-        assert.strictEqual(game.bank.constructor, Bank);
       });
     });
     describe('round property', () => {
@@ -160,7 +149,7 @@ describe('Round class', () => {
     Stepa: new Player(100),
     Masha: new Player(101)
   };
-  const round = new Round(players, new Dealer(), new Bank());
+  const round = new Round(players, new Dealer());
 
   describe('properties', () => {
     describe('players property', () => {
@@ -192,11 +181,6 @@ describe('Round class', () => {
     describe('dealer property', () => {
       it('should have Dealer constructor', () => {
         assert.strictEqual(round.dealer.constructor, Dealer);
-      });
-    });
-    describe('bank property', () => {
-      it('should have Bank constructor', () => {
-        assert.strictEqual(round.bank.constructor, Bank);
       });
     });
     describe('game stages property', () => {
