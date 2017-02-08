@@ -193,7 +193,7 @@ rules:
     - 2
     - 2
   linebreak-style:
-    - 2
+    - 0
     - unix
   quotes:
     - 2
