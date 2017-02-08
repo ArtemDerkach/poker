@@ -43,33 +43,36 @@
 
       <div class="cards">
 
-        <div class="opponentHand">
-          <div class="card"></div>
-          <div class="card"></div>
-          <p>opponent current money: <span>0</span></p>
+        <div class="bot">
+          <div class="card card1 c1"></div>
+          <div class="card card2 c2"></div>
+          <p>opponent current money: <span>100</span></p>
         </div>
 
         <div class="table">
-          <div class="card"></div>
-          <div class="card"></div>
-          <div class="card"></div>
-          <div class="card"></div>
-          <div class="card"></div>
+          <div class="card card1 c3"></div>
+          <div class="card card2 c4"></div>
+          <div class="card card3 c5"></div>
+          <div class="card card4 c6"></div>
+          <div class="card card5 c7"></div>
           <p>pot: <span>0</span></p>
         </div>
 
-        <div class="myHand" id="myH">
-          <div class="card"></div>
-          <div class="card"></div>
-          <p>current money: <span>0</span></p>
+        <div class="human">
+          <div class="card card1 c8"></div>
+          <div class="card card2 c9"></div>
+          <p>current money: <span>100</span></p>
+        </div>
+
+        <div class="actions">
+          <button type="button" data-action="card" class="startGame">continue</button>
         </div>
 
         <div class="actions game">
-          <button type="button" data-action="card" class="action-button">Give Card</button>
           <button  type="button" data-action="fold" class="action-button">Fold</button>
-          <button type="button" data-action="call" class="action-button">Call:<span> 0</span></button>
+          <button type="button" data-action="call" class="action-button call">Call:<span> 0</span></button>
           <button type="button" data-action="raise" class="action-button">Raise</button>
-          <textarea placeholder="enter sum to raise"></textarea>
+          <textarea class="action-button" placeholder="enter sum to raise"></textarea>
           <button type="button" data-action="check" class="action-button">Check</button>
         </div>
 

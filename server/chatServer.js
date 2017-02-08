@@ -2,15 +2,17 @@
 
 function chatServer(io, socket, database) {
 
-  const chatCollection = database.collection('chat');
-  const chatStartMsgLimit = 15;
-
-  chatCollection.find().limit(chatStartMsgLimit).sort({_id: -1}).toArray((err, res) => {
-    if (err) {
-      throw err;
-    }
-    socket.emit('output', res);
-  });
+  // print some messages from database
+  // for now no need in this shit.
+  // const chatCollection = database.collection('chat');
+  // const chatStartMsgLimit = 15;
+  //
+  // chatCollection.find().limit(chatStartMsgLimit).sort({_id: -1}).toArray((err, res) => {
+  //   if (err) {
+  //     throw err;
+  //   }
+  //   socket.emit('output', res);
+  // });
 
   function sendStatus(s) {
     socket.emit('status', s);

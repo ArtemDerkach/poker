@@ -29,7 +29,7 @@ class Deck {
       this.cardsInDeck[rnd] = this.cardsInDeck[i];
       this.cardsInDeck[i] = temp;
     });
-    return this.cardsInDeck;
+    return this;
   }
 
   dealTopCard() {

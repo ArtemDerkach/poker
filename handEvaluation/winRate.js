@@ -8,9 +8,9 @@ let combination = require('./combination');
 let handCombination = combination.handCombination;
 let whoWins = compareHands.whoWins;
 
-// return the winner 
+// return the winner
 function winRate(hand, table, enemyNum, deckClassFrom) {
-  
+
   let winner;
   let winNum = 0;
   let hands;
@@ -26,7 +26,7 @@ function winRate(hand, table, enemyNum, deckClassFrom) {
     hands.forEach((elem, i) => {
       name = elem['name'];
       hands[i] = handCombination(elem.hand);
-      hands[i]['name'] = name; 
+      hands[i]['name'] = name;
     });
 
     winner = whoWins(hands);

@@ -10,9 +10,6 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo.listen(server);
 
-const Deck = require('../mainApp/deckClass.js').Deck;
-const Game = require('../mainApp/gameProcesses.js').Game;
-
 const chatServer = require('./chatServer.js');
 const actionsServer = require('./actionsServer.js');
 

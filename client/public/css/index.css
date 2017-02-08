@@ -48,16 +48,17 @@ div.gameGrid {
 
 .card {
   height: 100px;
-  width: 60px;
+  width: 70px;
   border: 1px solid black;
   margin: 1px;
   display: inline-block;
 }
 
-.action-button {
+.action-button, .actions textarea{
   height: 20px;
   margin: 2px;
   width: auto;
+  visibility: inherit;
 }
 
 .actions textarea {
@@ -67,8 +68,14 @@ div.gameGrid {
   resize: none;
   border: 0px;
   padding: 0px;
+
 }
 
 .gameGrid p {
   margin: 2px;
+}
+
+img {
+  height: 100%;
+  width: 100%;
 }

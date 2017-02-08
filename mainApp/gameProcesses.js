@@ -11,28 +11,30 @@ class Game {
     this.players = {};
     this.cardsOnTable = [];
     this.dealer = new Dealer();
-    this.isRoundEnd = true;
     this.isCircleEnd = true;
-    this.gameStages = ['preflop', 'flop', 'tern', 'reaver'];
     this.playerInGame = [];
     this.playersInRound = [];
-    this.gameStage = '';
+    this.gameStage = 'ended';
     this.circleQueue = [];
-    this.playerToStopOn;
+    this.playerToStopOn = '';
   }
 
-  addPlayer(playerName, playerMoney) {
+  addPlayer(playerName, playerMoney, playerType) {
+
     if (this.players[playerName]) {
       return false;
     }
+
     Object.defineProperty(this.players, playerName, {
-      value: new Player(playerMoney),
+      value: new Player(playerName, playerMoney, playerType, this.dealer.pot),
       writable: true,
       enumerable: true,
       configurable: true
     });
+
     this.playersInGame = Object.keys(this.players);
     return true;
+
   }
 
   removePlayer(playerToRemove) {
@@ -51,19 +53,59 @@ class Game {
     }
   }
 
+  refresh() {
+    this.cardsOnTable = [];
+    this.dealer = new Dealer();
+    this.isCircleEnd = true;
+    this.playersInRound = [];
+    this.gameStage = 'ended';
+    this.circleQueue = [];
+    this.playerToStopOn = '';
+  }
+
   takeBlindsFromPlayers() {
+
+    let i = 0;
+    let j = 1;
     if (this.playersInGame.length < 2) {
       return false;
     }
     if (this.players[this.playersInGame[0]].smallBlind) {
-      this.players[this.playersInGame[0]].smallBlind = false;
-      this.playersInGame = this.playersInGame.slice(1, this.playersInGame.length).concat(this.playersInGame.slice(0, 1));
+      i = 1;
+      j = 0;
     }
-    this.players[this.playersInGame[0]].money -= 1;
-    this.players[this.playersInGame[0]].smallBlind = true;
-    this.players[this.playersInGame[1]].money -= 2;
-    this.players[this.playersInGame[1]].bigBlind = true;
-    this.dealer.pot += 3;
+    this.players[this.playersInGame[i]].money -= 1;
+    this.players[this.playersInGame[i]].smallBlind = true;
+    this.dealer.pot[this.players[this.playersInGame[i]].type] += 1;
+    this.players[this.playersInGame[j]].money -= 2;
+    this.players[this.playersInGame[j]].smallBlind = false;
+    this.dealer.pot[this.players[this.playersInGame[j]].type] += 2;
+    this.dealer.pot.table += 3;
+
+    this.socket.emit('blinds', {
+      player1: {
+        name: this.playersInGame[i],
+        blind: 'small blind',
+        blindMoney: -1,
+        money: this.players[this.playersInGame[i]].money
+      },
+      player2: {
+        name: this.playersInGame[j],
+        blind: 'big blind',
+        blindMoney: -2,
+        money: this.players[this.playersInGame[j]].money
+      },
+      pot: this.dealer.pot
+    });
+
+    this.socket.emit('output', [{
+      name: 'game',
+      message: `${this.playersInGame[i]} got small blind (-1)`
+    }, {
+      name: 'game',
+      message: `${this.playersInGame[j]} got big blind (-2)`
+    }]);
+
     return true;
   }
 
@@ -71,43 +113,51 @@ class Game {
     if (this.gameStarted) {
       this.round();
     }
+    console.log(this);
   }
 
   round() {
-    if (this.gamestage === 'ended') {
+    if (this.gameStage === 'ended') {
       this.gameStage = '';
       this.playersInRound = [];
       for (let i = 0; i < this.playersInGame.length; i += 1) {
         this.playersInRound.push(this.playersInGame[i]);
       }
-    } else {
-      this.stage();
     }
+    this.stage();
+
   }
 
   stage() {
-    if (this.isCircleEnd === 'false') {
+    console.log(`gameStage: ${this.gameStage}`);
+    if (this.isCircleEnd === false) {
       this.circle();
     } else {
       switch (this.gameStage) {
       case '':
         this.gameStage = 'preflop';
         this.takeBlindsFromPlayers();
-        this.dealer.dealCardsToPlayers(this.players);
+        this.socket.emit('output', [{
+          name: 'game',
+          message: 'preflop stage'
+        }]);
+        this.dealer.dealCardsToPlayers(this.players, this.socket);
+        this.isCircleEnd = false;
         break;
       case 'preflop':
         this.gameStage = 'flop';
-        this.dealer.dealCardOnTable(this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.socket, this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.socket, this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.socket, this.cardsOnTable);
+        this.socket.emit('log', this.cardsOnTable);
         break;
       case 'flop':
         this.gameStage = 'tern';
-        this.dealer.dealCardOnTable(this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.socket, this.cardsOnTable);
         break;
       case 'tern':
         this.gameStage = 'reaver';
-        this.dealer.dealCardOnTable(this.cardsOnTable);
-        this.dealer.dealCardOnTable(this.cardsOnTable);
-        this.dealer.dealCardOnTable(this.cardsOnTable);
+        this.dealer.dealCardOnTable(this.socket, this.cardsOnTable);
         break;
       case 'reaver':
         this.gameStage = 'ended';
@@ -119,53 +169,95 @@ class Game {
       for (let i = 0; i < this.playersInRound.length; i += 1) {
         this.circleQueue.push(this.playersInRound[i]);
       }
+      this.socket.emit('output', [{
+        name: 'game',
+        message: `make your choise ${this.circleQueue[0]}!`
+      }]);
     }
   }
 
   circle() {
-    if (this.players[this.circleQueue[0]].type === 'human' && this.players[this.circleQueue[0]].action === '') {
-      this.socket.emit('message', {
-        player: this.players[this.circleQueue[0]].name,
-        status: 'need action'
-      });
-    } else {
-      this.playerAction(this.players[this.circleQueue[0]].action);
+    console.log(`circle() this.circleQueue[0]:  ${this.players[this.circleQueue[0]].name}`);
+    if (this.players[this.circleQueue[0]].action === '') {
+      this.players[this.circleQueue[0]].getAction(this.socket, this.dealer.pot);
     }
+    this.playerAction(this.players[this.circleQueue[0]].action);
   }
 
   playerAction(action) {
-    switch (action.type) {
+    console.log(`playerAction(): ${action}`);
+    if (!this.dealer.testAction(action, this.socket)) {
+      return;
+    }
+    switch (action) {
+
     case 'fold':
-      this.removePlayerFromArray(this.circleQueue[0], this.playersInRound);
-      this.removePlayerFromArray(this.circleQueue[0], this.circleQueue);
-      break;
+      this.socket.emit('output', [{
+        name: 'game',
+        message: `${this.circleQueue[0]} fold`
+      }]);
+      this.dealer.fold(this.players[this.circleQueue[1]], this.socket);
+      this.socket.emit('refresh');
+      this.refresh();
+      return;
+
     case 'check':
+      this.socket.emit('output', [{
+        name: 'game',
+        message: `${this.players[this.circleQueue[0]].name} has checked`
+      }, {
+        name: 'game',
+        message: 'press continue'
+      }]);
       this.iteratePlayersInCircle();
       break;
+
     case 'call':
       this.dealer.callBet(this.players[this.circleQueue[0]]);
+      this.socket.emit('setMoney', {
+        player: this.players[this.circleQueue[0]],
+        pot: this.dealer.pot
+      });
+      this.socket.emit('output', [{
+        name: 'game',
+        message: `${this.circleQueue[0]} has called`
+      }]);
+      this.socket.emit('setCall', this.dealer.pot);
+      this.players[this.circleQueue[0]].action = '';
       this.iteratePlayersInCircle();
       break;
+
     case 'raise':
       this.dealer.raiseBet(this.players);
       this.playerToStopOn = this.circleQueue[0];
       this.iteratePlayersInCircle();
       break;
     default:
+
       break;
+    }
+    if (this.players[this.circleQueue[0]].type === 'bot') {
+      console.log('bot tern');
+      this.go();
     }
   }
 
   iteratePlayersInCircle() {
-    this.playersInCircle = this.playersInCircle.slice(1, this.playersInCircle.length).concat(this.playersInCircle.slice(0, 1));
+    this.circleQueue.reverse();
+    console.log(`iteratePlayersInCircle(): ${this.circleQueue}`);
     if (this.playerToStopOn === '') {
       this.playerToStopOn = this.circleQueue[this.circleQueue.length - 1];
-    } else if (this.playerToStopOn === this.players[this.circleQueue[0]]) {
+    } else if (this.playerToStopOn === this.circleQueue[0]) {
       this.isCircleEnd = true;
     }
+    console.log(`iteratePlayersInCircle(): ${this.isCircleEnd}`);
+    console.log(`iteratePlayersInCircle(): ${this.playerToStopOn}`);
   }
 
   startGame() {
+    if (this.players.length <= 1) {
+      this.addPlayer('bot', 100, 'bot');
+    }
     this.gameStarted = true;
   }
 
