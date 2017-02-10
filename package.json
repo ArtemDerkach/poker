@@ -4,7 +4,7 @@
   "description": "an app to play poker",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "E:/progects/poker/node_modules/.bin/mocha --recursive e:/progects/poker/test/"
   },
   "author": "Artem Derkach",
   "license": "ISC",
