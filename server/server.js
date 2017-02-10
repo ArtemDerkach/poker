@@ -10,8 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo.listen(server);
 
-const chatServer = require('./chatServer.js');
-const actionsServer = require('./actionsServer.js');
+const Input = require('./chatServer.js').Input;
 
 const port = 8080;
 const indexPath = path.join(__dirname, '../client/index.html');
@@ -27,20 +26,29 @@ server.listen(port, () => {
 });
 
 mongo.connect('mongodb://127.0.0.1/poker', (err, database) => {
-
   if (err) {
-    throw err;
+    console.log('mongo is not connected');
   } else {
     console.log('mongo connected');
   }
 
   io.sockets.on('connection', (socket) => {
-
     console.log('dummy client connected');
 
-    chatServer(io, socket, database);
-    actionsServer(io, socket, database);
+    socket.on('chatInput', (data) => {
+      const chatCollection = database.collection('chat');
+      const input = new Input(data);
 
+      if (input.isValid()) {
+        const output = input.getOutput();
+        if (chatCollection) {
+          chatCollection.insert(output);
+        }
+        io.sockets.emit('chatOutput', output);
+      } else {
+        const error = input.getError();
+        socket.emit('chatOutput', error);
+      }
+    });
   });
-
 });
